@@ -1,6 +1,8 @@
 const express = require('express')
 const app = express()
 const morgan = require('morgan')
+
+app.use(express.static('build'))
 app.use(express.json())
 
 morgan.token('type', function (req, res) {
@@ -84,13 +86,12 @@ app.post('/api/persons', (request, response) => {
       },
     ])
   }
-  const person = [
-    {
-      id: generateId(),
-      name: body.name,
-      number: body.number,
-    },
-  ]
+  const person = {
+    id: generateId(),
+    name: body.name,
+    number: body.number,
+  }
+
   persons = persons.concat(person)
   response.json(person)
 })

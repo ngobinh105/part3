@@ -20,6 +20,7 @@
   "homepage": "https://github.com/ngobinh105/part3#readme",
   "dependencies": {
     "express": "^4.17.1",
+    "mongoose": "^6.0.6",
     "morgan": "^1.10.0"
   },
   "devDependencies": {
