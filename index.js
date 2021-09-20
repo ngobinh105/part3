@@ -49,50 +49,56 @@ app.post('/api/persons', async (request, response) => {
   const body = request.body
   const result = await Person.find({})
   const existed = result.some((p) => p.name === body.name)
-  console.log('existed', existed)
   if (!body.name) {
-    response.status(400).json([
-      {
-        error: 'name is missing',
-      },
-    ])
+    response.status(400).json({
+      error: 'name is missing',
+    })
   }
   if (existed) {
-    response.status(400).json([
-      {
-        error: 'name must be unique',
-      },
-    ])
+    response.status(400).json({
+      error: 'name must be unique',
+    })
   }
   if (!body.number) {
-    response.status(400).json([
-      {
-        error: 'number is missing',
-      },
-    ])
+    response.status(400).json({
+      error: 'number is missing',
+    })
   }
   const person = new Person({
     name: body.name,
     number: body.number,
   })
 
-  person.save().then((savedPerson) => {
-    response.json(savedPerson)
-  })
+  person
+    .save()
+    .then((savedPerson) => {
+      response.json(savedPerson)
+    })
+    .catch((error) => {
+      response.status(400).json({ error: error.message })
+    })
 })
-app.put('/api/persons/:id', (request, response, next) => {
+app.put('/api/persons/:id', async (request, response, next) => {
   const body = request.body
   const person = {
     name: body.name,
     number: body.number,
   }
-  Person.findByIdAndUpdate(request.params.id, person, { new: true })
-    .then((updatedPerson) => {
-      response.json(updatedPerson)
-    })
-    .catch((error) => {
-      next(error)
-    })
+  try {
+    const updatedPerson = await Person.findByIdAndUpdate(
+      request.params.id,
+      person,
+      { new: true }
+    )
+    if (updatedPerson === null) {
+      response.status(400).json({
+        error: 'person was removed',
+      })
+    }
+    response.json(updatedPerson)
+  } catch (error) {
+    console.log(error)
+  }
 })
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
@@ -109,6 +115,7 @@ const errorHandler = (error, request, response, next) => {
   next(error)
 }
 app.use(errorHandler)
+
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
